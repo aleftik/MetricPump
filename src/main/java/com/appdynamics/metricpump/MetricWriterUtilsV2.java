@@ -6,7 +6,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +59,34 @@ public class MetricWriterUtilsV2 {
         if (metric.isNetworkVizMetric()) {
             addTagsForFlows(tags,metric,request, sanitize);
         }
+
+        if (metric.isCustomMetric()) {
+            addTagsForHaproxyBackendCustomMetrics(tags, metric, request, sanitize);
+        }
+
+        return tags;
+    }
+
+    static JsonArray addTagsForHaproxyBackendCustomMetrics(JsonArray tags, AppDynamicsMetric metric, MetricUploadRequest request, boolean sanitize) {
+        String path = metric.getMetricPath();
+        String[] pathComponents = path.split("|");
+        StringBuilder newPathComponents = new StringBuilder();
+        boolean foundHaproxy = false;
+        for(int i = 0; i < pathComponents.length; i++) {
+            if (foundHaproxy) {
+                if (pathComponents[i].equalsIgnoreCase("backend")) {
+                    newPathComponents.append(pathComponents[i]);
+                    continue;
+                }
+                tags.add("HaProxyBackend:"+pathComponents[i]);
+                continue;
+            }
+            if (pathComponents[i].equalsIgnoreCase("haproxy")) {
+                foundHaproxy = true;
+            }
+            newPathComponents.append(pathComponents[i]);
+        }
+        metric.setMetricPath(newPathComponents.toString());
 
         return tags;
     }

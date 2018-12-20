@@ -40,12 +40,12 @@ public class SignalFxHttpMetricWriter extends AbstractHttpMerticWriter {
                 JsonObject fxMetric = new JsonObject();
                 fxMetric.addProperty("metric", MetricWriterUtilsV2.getMetricName(metric,false ));
 
-                JsonObject dimensions = new JsonObject();
                 JsonObject tag = new JsonObject();
                 fxMetric.addProperty("value", metric.getMetricValues().get(0).getValue());
                 String[] tags = MetricWriterUtils.getTags(metricPath, metricUploadRequest);
                 //fxMetric.addProperty("host", MetricWriterUtils.getHost(metricPath, tags));
-                fxMetric.add("dimensions", MetricWriterUtilsV2.toJsonObject(MetricWriterUtilsV2.getTags(metric,metricUploadRequest,false)));
+                JsonObject dimensions = MetricWriterUtilsV2.toJsonObject(MetricWriterUtilsV2.getTags(metric,metricUploadRequest,false));
+                fxMetric.add("dimensions", dimensions);
                 fxMetric.addProperty("timestamp",metric.getMetricValues().get(0).getStartTimeInMillis());
                 metricList.add(fxMetric);
             }
